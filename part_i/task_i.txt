@@ -1,0 +1,12 @@
+Hello, Arguments!
+
+- Write a script 'hello.sh' that takes exactly one argument (e.g., a name).
+
+- If the user provides the argument, the script should greet them by name, for example:
+
+  ./hello.sh Bob
+  Hello, Bob!
+
+- If the user does not provide exactly one argument, the script should print a usage* message, such as:
+
+  Usage: ./hello.sh <name>

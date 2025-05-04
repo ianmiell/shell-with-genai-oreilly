@@ -1,0 +1,10 @@
+File or folder checker
+
+- Write a script 'check_path.sh' that takes one argument: a path (file or directory).
+
+- The script should check whether the path exists, whether it’s a file or a directory, and display an appropriate message.
+
+- Bonus: Return different exit codes for each scenario, e.g.,
+  - 0 if it's a file,
+  - 1 if it's a directory,
+  - 2 if it does not exist.
