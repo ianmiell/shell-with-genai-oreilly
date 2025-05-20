@@ -1,0 +1,9 @@
+Quick Health Check with a Ping
+
+- Write a script 'check_host.sh' that pings a given host (eg 'google.com') once.
+
+- If the 'ping' is successful, print "Host is up!"
+
+- Otherwise print "Host is down or unreachable."
+
+- (Optional) Expand the script to take the hostname or IP address as an argument.

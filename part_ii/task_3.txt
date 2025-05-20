@@ -1,0 +1,9 @@
+Combine Streams
+
+- Create a script 'combine_streams.sh' that:
+
+   - Executes a command that produces both normal output and errors (for instance, try listing files in a non-existent directory).
+
+   - Captures both stdout and stderr in a single output stream, then writes them to a file 'combined.log'.
+
+- Print a statement to the user indicating which file the combined output was saved to.

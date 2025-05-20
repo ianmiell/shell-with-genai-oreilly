@@ -1,0 +1,11 @@
+Find and Process Large Files (Optional Advanced Task)
+
+- Write a script 'large_files.sh' that:
+
+   - Uses 'find' to locate files over 100MB in the '/var/log' directory (or another directory if you prefer).
+
+   - Prints the file list to stdout and writes the same list to 'large_files.txt'.
+
+   - For each large file, prompt the user if they want to compress it.
+
+- Use `xargs` to compress multiple files in one go

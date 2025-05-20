@@ -1,0 +1,17 @@
+Manage Text
+
+- Write a script 'manage_text.sh' that:
+
+   - Reads a large text file from stdin (eg 'cat bigfile.txt | ./manage_text.sh').
+
+   - Uses 'awk' or 'grep' to filter lines based on a pattern.
+
+   - Passes the filtered lines to 'sort'.
+
+   - Pipes the sorted lines to 'uniq' to remove duplicates.
+
+   - Redirects the final result to 'output.txt'.
+
+- Print a summary line at the end:
+
+   "Done filtering! The cleaned-up text is in 'output.txt'."

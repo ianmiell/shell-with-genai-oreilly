@@ -1,0 +1,15 @@
+Maths Pipe
+
+- Modify 'math_functions.sh' (from the previous task) to create a new script 'math_pipe.sh':
+
+   - Define a function `calculate_square` that reads numbers (one per line) from stdin and prints each number squared to stdout.
+
+   - In the main script, use a pipeline such that:
+
+     - You output a set of numbers.
+
+     - Pipe these numbers into the 'calculate_square' function.
+
+     - Pipe the result into 'sort -n' to list squares in ascending order.
+
+- Verify that your function only processes numeric input and prints an error line for invalid input (to stderr).

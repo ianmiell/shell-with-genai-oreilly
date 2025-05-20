@@ -1,0 +1,15 @@
+Log Analyzer
+
+- Create a script 'log_analyzer.sh' that takes two arguments:
+
+  - a log file, and
+
+  - a keyword
+
+- The script searches for lines containing the keyword and:
+
+  - Prints the count of matching lines.
+
+  - Exits with code '0' if any matches are found, or '1' if none are found.
+
+- Optional: Display the first 3 matching lines.

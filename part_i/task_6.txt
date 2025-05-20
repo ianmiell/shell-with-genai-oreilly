@@ -1,0 +1,7 @@
+CSV Summation
+
+- Write a script 'csv_sum.sh' that takes the path to a simple CSV file as an argument (assume each row has numbers in one column).
+
+- The script calculates the sum of all numbers in that column and prints it to the screen.
+
+- If the file doesn’t exist or is empty, print an error message and return a non-zero exit code.

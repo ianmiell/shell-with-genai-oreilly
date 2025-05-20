@@ -1,0 +1,9 @@
+Recursive File Cleanup
+
+- Write a script 'cleanup.sh' that:
+
+   - Recursively finds all backup files ending in '.bak' in the current directory (and subdirectories).
+
+   - Asks the user (via a prompt) whether to delete these '.bak' files one by one, or automatically delete them all if given a command-line argument like '--force'.
+
+- Print the total number of files deleted at the end.

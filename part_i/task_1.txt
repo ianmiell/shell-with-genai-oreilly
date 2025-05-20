@@ -1,6 +1,6 @@
 Hello, Arguments!
 
-- Write a script 'hello.sh' that takes exactly one argument (e.g., a name).
+- Write a script 'hello.sh' that takes exactly one argument (eg a name).
 
 - If the user provides the argument, the script should greet them by name, for example:
 

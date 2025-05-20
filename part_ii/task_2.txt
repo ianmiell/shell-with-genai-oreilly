@@ -1,0 +1,15 @@
+Maths Functions
+
+- Write a script 'math_functions.sh' that defines:
+
+  - A function 'add_numbers' that accepts two parameters and echoes their sum.
+
+  - A function 'multiply_numbers' that accepts two parameters and echoes their product.
+
+- In the main script:
+
+  - Call each function with different pairs of numbers.
+
+  - Capture and display the results with descriptive messages like "The sum of 5 and 3 is 8."
+
+- If either function is called with fewer or more than two parameters, print an error message and return a non-zero exit code.

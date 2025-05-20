@@ -1,0 +1,13 @@
+Log Filter
+
+- Write a script 'filter_logs.sh' that:
+
+  - Reads from a log file (passed as the first argument).
+
+  - Filters out lines containing a specified keyword (second argument).
+
+  - Sorts the matching lines and removes duplicates.
+
+  - Writes the final output to stdout while capturing any errors (eg 'file not found') to 'error.log'.
+
+- Include a brief usage message if any arguments are missing.

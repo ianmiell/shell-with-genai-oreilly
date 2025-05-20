@@ -1,0 +1,13 @@
+System Status Reporter
+
+- Write a script `system_report.sh` that:
+
+  - Prints disk usage
+
+  - Prints memory usage
+
+  - Prints the current system uptime and load average
+
+  - Lists the top 5 CPU-consuming processes
+
+- Use a for loop or multiple commands in sequence to gather this information, then summarize it in a neat, readable format.

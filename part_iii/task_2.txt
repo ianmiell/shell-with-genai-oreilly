@@ -1,0 +1,13 @@
+Grep and Sed for Log Analysis
+
+- Create a script `regex_logs.sh` that:
+
+  - Reads a list of log filenames from stdin (eg via 'cat loglist.txt | ./regex_logs.sh').
+
+  - For each log file, searches for IP addresses using a regex
+
+  - Extracts these IP addresses and rewrites them to a file 'extracted_ips.log'.
+
+- Use 'sed' or 'awk' to mask part of each IP address (eg `192.168.xxx.xxx`) for privacy.
+
+- Print a summary of how many unique IPs were found per file.

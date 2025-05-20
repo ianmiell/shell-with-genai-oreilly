@@ -1,0 +1,9 @@
+Batch Rename Utility
+
+- Write a script 'batch_rename.sh' that:
+
+  - Renames all '.txt' files in the current directory to '.bak' (eg 'example.txt' → 'example.bak').
+
+  - Prints a list of the renamed files.
+
+- If there are no '.txt' files, print a message like "No .txt files found."

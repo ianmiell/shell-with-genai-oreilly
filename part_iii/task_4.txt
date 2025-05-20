@@ -1,0 +1,11 @@
+Text Replacement with Loops and `sed`
+
+- Create a script 'bulk_replace.sh' that:
+
+   - Iterates over all '.txt' files in the current directory using a glob
+
+   - Uses 'sed' to replace a given text pattern (like `FOO`) with a new string (`BAR`).
+
+   - Writes changes in-place to each file (backup optional).
+
+- If no '.txt' files exist, print a warning message.
