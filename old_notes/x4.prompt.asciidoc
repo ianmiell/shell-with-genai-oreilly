@@ -1,0 +1,115 @@
+The prompt.
+
+ bash
+ PS1='My super prompt>>>>   '
+ ls
+ exit
+
+As you’ll remember, there are some 'shell variables' that are set within bash that are used for various purposes. One of these is `PS1`, which is the prompt you see after each command is completed.
+
+== The PS2 Variable {#_the_ps2_variable}
+Now try this:
+
+ bash
+ PS2='I am in the middle of something!>>>  '
+ cat > /dev/null << END
+ some text
+ END
+ exit
+
+The PS2 variable is the ‘other’ prompt that the shell uses to indicate that you are being prompted for input to a program that is running. By default, this is set to `> `, which is why you see that as the prompt when you normally type the `cat` command above in.
+
+=== `PS3` and `PS4` {#_ps3_and_ps4}
+`PS3` is used by the `select` looping structure. We don’t cover this  as I've barely ever seen it used.
+`PS4` is the last one:
+
+ bash
+ PS4='> Value of PWD is: $PWD'
+ set -x
+ pwd
+ cd /tmp
+ ls $(pwd)
+ cd -
+ exit
+
+In ‘trace’ mode PS4 is echoed before each line of trace output. Do you remember what trace mode is?
+
+But why is the `>` in the output repeated? This indicates the _level_ of indirection (ie subshells) in the trace. Every time the script goes one level 'down' a shell, the first character in the PS4 value is repeated. Look at the output after the `ls $(pwd)` command.
+
+A> ## Note
+A>
+A> Things can get really confusing if you have commands in your prompt, or you have `PROMPT_COMMAND` set (see below section). If you don’t fully understand the output of the above, don’t panic!
+
+=== Pimp Your Prompt
+For all the PS variables mentioned above, there are special escape values that can be used to make your prompt display interesting information.
+See if you can figure out what is going on here:
+
+ bash
+ PS1='\u@\H:\w \# \$ '
+ ls
+ exit
+
+See man page for more options
+
+
+
+
+_____________________________________________
+
+Use your knowledge gained so far to figure out what is going on here:
+
+{line-numbers=on,starting-line-number=23}
+    $ bash
+    $ PS1='\[\033[01;31m\]PRODUCTION\$ '
+    $ PS1='\[\033[01;32m\]DEV\$ '
+    $ exit
+
+How would you make this automatically happen on a given server when you log in?
+
+### `PROMPT_COMMAND` {#_prompt_command}
+
+Another way the prompt can be affected is with the bash variable
+`PROMPT_COMMAND`:
+
+{line-numbers=on,starting-line-number=27}
+    $ bash
+    $ PROMPT_COMMAND='echo "Hello prompt $(date)"'
+    $ ls
+    $ exit
+
+Every time the prompt is displayed the `PROMPT_COMMAND` is treated as a command,
+and run.
+
+You can use this for all sorts of neat tricks!
+
+### What You Learned {#_what_you_learned}
+
+-   What the PS variables are
+
+-   Where each PS variable is used
+
+-   How to augment your prompts to give you useful information
+
+-   How to automatically run commands before each prompt is shown
+
+### What Next? {#_what_next}
+
+Next you will learn a very useful technique for quickly creating files: the
+so-called ‘here doc’.
+
+### Cleanup {#_cleanup}
+
+No cleanup is required here, though you may want to set up a fresh bash session in case your prompt has been changed.
+
+### Exercises {#_exercises}
+
+1\) Look up the other prompt escape characters and use them.
+
+2\) Update your bash startup files so that the prompt tells you useful
+information when you log in
+
+3\) Create your own version of the `history` command by using the `PROMPT_COMMAND` variable.
+
+
+{pagebreak}
+

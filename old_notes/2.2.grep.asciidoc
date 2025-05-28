@@ -1,0 +1,232 @@
+If you work on the command line, you are going to be manipulating a lot of text.
+Learning about regular expressions is important.
+
+First wc
+
+== wc
+
+ wc -l README.md
+ wc -w README.md
+ wc -c README.md
+
+ grep -rw 'Network' * | wc -l
+ grep -rw 'Network' * | wc -c
+ grep -rw 'Network' * | wc -w
+ grep -rwi 'Network' * | wc -l
+ grep -rwi 'Network' * | wc -c
+ grep -rwi 'Network' * | wc -w
+
+== grep
+
+The key tool you will need is grep. This is the big one we will look at.
+name == 'global regular expression print'
+
+Finds matches to text:
+
+ cd ~/git/kubernetes
+ grep 'kubernetes' README.md
+ grep 'kubernetes' README.md | wc -l   # number of lines
+
+finds all the lines that mention 'kubernetes'.
+The 'kubernetes' is the regular expression. The last argument are the files we want to look at. The shell can take a glob instead of filenames.
+Just matching specific values lacks power, so, like with globs we can use special characters to widen or narrow our search.
+
+ grep '[Kk]ubernetes' README.md
+ grep '[Kk]ubernetes' README.md | wc -l
+
+Notice I put my regular expression in quotes. This is because I don't want the shell to interpret any glob characters before it gets passed to the grep command. In square brackets means alternates are possible.
+Dot means 'any character'.
+
+ grep '.ubernetes' README.md
+
+Note that this is different from a glob. Remember a glob matches files.
+
+ grep '.ubernetes' .EADME.md
+
+Error - no such file. A dot has no special meaning in a glob.
+A star means 'any series of characters' in a glob.
+
+ grep 'kubernetes' *DME.md
+
+and a ? means any character in a glob
+
+ grep 'kubernetes' ???DME.md
+ grep 'kubernetes' ?DME.md
+
+So globs and regular expressions are different.
+While a dot can mean 'any character' in a regexp and star 0 or more of any character, in regexps '*' means repeat last match item 0 or more times.
+So .* means match everything, even empty lines
+
+ grep '.*' README.md
+ grep '.*' README.md | wc -l
+ cat README.md | wc -l
+ grep 'kubernetesa*' README.md  # because a is there zero or more times
+
+still matches kubernetes lines because there are zero or more a's after kubernetes (0).
+To make matters even more confusing, there are different types of regular expression.
+For here I will keep it simple, and talk about basic regular expressions, and leave extended to later (egrep).
+https://regexone.com/ for more
+
+=== Codebase
+Let's go to a big codebase:
+
+ du .                     # disk taken up by each file, in 512-byte blocks
+ du -s .                  # disk taken up by all files (summary)
+ du -hs .                 # disk taken up by all files in human-readable form
+
+I want to search for all references to the word 'network'.
+
+ grep 'network' *
+
+Star is a 'glob' which looks similar to a regexp, but is different in confusing ways. Here it just means 'match every file'.
+But here it only matches files in my folder. If I want to match on every folder 'under' where I am, I can use -r
+
+ grep -r 'network' *
+
+Pipes pass the output (technically standard output) of one command into the input of another:
+
+ grep -r 'network' * | less   # notice how fast, because the output is streamed rather than collected, in contrast to what follows
+
+Or, pass to wc
+
+ grep -r 'network' * | wc             # lines, words, characters
+# I want to get rid of binary files matches - add 'I' to what follows
+ grep -rI 'network' * | wc -l
+
+That was quick! But what about matching capital N or NETWORK? -i
+
+ grep -riI 'Network' * | wc -l
+
+Now what if I want to match the whole word only, eg not: networking?
+
+ grep -riwI 'Network' * | wc -l
+
+Other useful flags:
+
+-v - reverse the match, ie match lines that _don't_ have the string in
+
+ grep -vrwiI 'Network' * | less
+
+-l - list just the filenames that match
+
+ grep -lrwiI 'Network' * | less
+
+-n - show the line numbers
+
+ grep -nrwiI 'Network' * | less
+
+There are logs of flags - man grep
+
+== editing in flight: tr
+This handy tool allows you to manipulate characters in-flight. It stands for 'translate':
+
+ grep -rwiI 'Network' | tr 'n' 'p' | less
+
+But that doesn't change 'N', so you can do:
+
+ grep -rwiI 'Network' | tr 'nN' 'pP' | less
+
+The ordering is important. More often I use it to get rid of special characters that annoy me, with the -d delete flag eg to remove newlines, spaces and tabs:
+
+ grep -rwiI 'Network' | tr -d '\n \t' | less
+ man printf
+ man 7 ascii
+
+== editing in flight: sed
+sed is like tr, but allows for richer editing of text line by line.
+Can't go into all detail here, but we look at the s(earch and replace) command:
+
+ grep -rwiI 'Network' | sed 's/Network/FOO/' | less
+
+Search for Network. Case sensitive (regexp):
+
+ grep -rwiI 'Network' | sed 's/[Nn]etwork/FOO/' | less
+
+Search for Network (global):
+
+ grep -rwiI 'Network' | sed 's/[Nn]etwork/FOO/g' | less
+
+Can get way more complex than this.
+
+== sort
+Sorts alphabetically:
+
+ grep -rwiI 'Network' | sort | less
+
+grep -h for no filenames in output
+
+ grep -hrwiI 'Network | sort | less
+
+
+== head & tail
+
+ head README.md
+ tail README.md
+ tail -20 README.md
+
+Mention tail -f for following log files
+
+ tail -f README.md
+
+# another window
+
+ echo HELLO >> README.md
+
+
+== TODO
+== Basic vs extended regular expressions
+Basic vs extended regular expressions (at end?)
++ matches one or more of the last character after the last match
+
+ grep 'kubernetes+' README.md
+
+this matches zero because there are no s's
+Now, the shell reads over the line looking for globs, so if we run:
+
+ grep * README.md
+
+we get output we might not expect.
+
+ echo grep * README.md
+
+The file expanded.
+
+== Regexps in bash
+
+ if [[ a =~ .* ]]; then echo true; fi
+
+but not
+
+ if [ a =~ .* ]; then echo true; fi
+
+
+== EXERCISE
+https://learning.oreilly.com/scenarios/bash-fundamentals-challenge/9781098138530/
+
+== SOLUTION
+
+## Task 1 Solution
+
+cat > /root/task1.sh << 'EOF'
+#!/bin/bash
+cd /root/task1
+for f in $(find /root/task1 -type f | sort)
+do
+  echo "$(basename $f) is in the folder $(dirname $f)"
+done
+EOF
+chmod +x /root/task1.sh
+/root/task1.sh > /root/output
+
+## Task 2 Solution
+
+cat > /root/file_reporter.sh << 'EOF'
+#!/bin/bash
+cd /root/task1
+for f in $(find /root/task1 -type f | sort)
+do
+  echo "$(basename $f) is in the folder $(dirname $f), and has $(wc -l $f | awk '{print $1}') lines"
+done
+EOF
+chmod +x /root/file_reporter.sh
+/root/file_reporter.sh > /root/output

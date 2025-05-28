@@ -1,0 +1,9 @@
+== Part III - Advanced Shell Scripting
+
+Loops
+Globs and regexps
+Signals / Traps / Job Control / Background Tasks
+Options and Debugging
+
+
+

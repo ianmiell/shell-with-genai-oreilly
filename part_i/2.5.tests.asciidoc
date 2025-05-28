@@ -1,0 +1,159 @@
+== SLIDE - TESTS
+A test in bash is NOT like a test that your program works.
+Tests are a fundamental part of bash scripting, whether it’s on the command line in one-liners, or in much larger scripts.
+The subject can get very fiddly and confusing. In this section I’ll show you some pitfalls, and give rules of thumb for practical bash usage.
+It's a way of writing an expression that can be true or false.
+In this section you will learn about:
+
+- What bash tests are
+- Different ways of writing bash tests
+- Logical operators
+- Binary and unary operators
+- `if` statements
+
+== WALKTHROUGH - BASIC TESTS
+
+Tests in bash are constructs that allow you to do *conditional expressions*.
+They use square brackets (ie `[` and `]`) to enclose what is being tested.
+For example, the simplest tests might be:
+
+ [ 1 = 0 ]
+ echo $?
+
+We use this number, which we call an exit code to indicate outcome of tests.
+
+Now a little on exit codes.
+
+Every time you run a command and the OS processes it, a number is computed and returned to the caller. This number is called the exit code, and we use it to indicate what happened to the command. Did it succeed, or fail? Was the command not found, etc?
+
+We access it by the query variable, which is automatically set for us after every command.
+
+ ls
+ echo $?
+ commanddoesnotexist
+ echo $?
+
+We will cover exit codes in more depth later, but for now, you just need to know that 0 means 'success', or 'true', and non-zero usually means something other than success.
+
+So for tests (which are either true or false) if the query variable is 0, the last statement is true. Otherwise it's untrue.
+Exit codes are also used when commands return, so a test is a kind of command.
+
+ [ 1 = 1 ]
+ echo $?
+
+A single equals sign works just the same as a double equals sign. Generally I prefer the double one so it does not get confused with variable assignment.
+
+ [ 0 == 0 ]
+ echo $?
+ [ 1 == 1 ]
+ echo $?
+
+Things get more interesting and useful if you try and compare values in your tests.
+
+ A=1
+ [ $A = 1 ]
+ echo $?
+ [ $A = 2 ]
+ echo $?
+ [ $(hostname) = myhost ]
+ echo $?
+
+== Logical Operators
+
+Similar to other languages:
+`||` means OR
+`&&` means AND
+
+Simple examples
+
+ doesnotexist && echo here
+ doesnotexist || echo here
+
+The first command fails in both cases, and the first does not
+You often see this kind of thing:
+
+ mkdir tmp && cd tmp
+
+If the mkdir failed, then the cd would not run.
+
+'!' means NOT
+
+ [ ! 1 = 1 ]
+ echo $?
+
+=== The `[[` Operator
+The `[[` operator is very similar to the 'test' operator with *two* square brackets instead of one:
+
+ [[ 1 = 1 ]]
+ echo $?
+
+This confused me a lot for some time! What is the difference between `[` and `[[` if they produce such similar output?
+The differences between `[[` and `[` are relatively subtle.
+
+ unset DOESNOTEXIST
+ [ ${DOESNOTEXIST} = '' ]
+ echo $?
+
+What happened there? Evaluation resulted in error (error code 2) because the variable `DOESNOTEXIST`… does not exist. So bash processes that variable in the next line, and ends up running:
+
+ [ = '' ]
+
+which makes no sense to it, so it complains! It's expecting something on the left hand side of the empty quotes.
+Instead:
+
+ [[ ${DOESNOTEXIST} = '' ]]
+ echo $?
+
+works. Sometimes you see:
+
+ [ x${DOESNOTEXIST} = x ]
+ echo $?
+
+The command which uses the double brackets `[[` tolerates the fact that the variable does not exist, and treats it as the empty string. It therefore resolves to:
+
+ [ '' = '' ]
+
+The sixth command acts as a workaround. By placing an `x` on both sides of the equation, the code ensures that *something* gets placed on the left hand side:
+
+ [ x = 'x' ]
+
+You can frequently come across code like this:
+
+ [[ "x$DOESNOTEXIST" = "x" ]]
+
+where users have put quotes on both sides *as well as* an `x` *and* put in double brackets. Only one of these protections is needed, but people get used to adding them on as superstitions to their bash scripts. And it doesn’t seem to do any harm.
+Once again, you can see understanding how quotes work is critical to bash mastery!
+So `[[` can handle some edge cases when using `[`.
+
+Also:
+
+ bash-5.1$ [ 10 < 2 ]
+ bash: 2: No such file or directory
+ bash-5.1$ [[ 10 < 2 ]]
+ bash-5.1$
+
+=== Confused?
+You’re not alone. In practice, I follow most style guides and always use `[[` until there is a good reason not to.
+If I come across some tricky logic in code I need to understand, I just look it up there and then, usually in the bash man page.
+
+=== `if` Statements
+Now you understand tests, if statements will be easy!
+
+ if [[ 10 -lt 2 ]]
+ then
+   echo 'wrong'
+ elif [[ 10 -gt 2 ]]
+ then
+   echo 'right'
+ else
+   echo 'impossible'
+ fi
+
+`if` statements consist of a test, followed by the word `then`, the commands to run if that `if` returned ’true’. If it returned false, it will drop to the next `elif` statement if there is another test, or `else` if there are no more tests. Finally, the if block is closed with the `fi` string.
+The `else` or `elif` blocks are not required. For example, this will also work:
+
+ if [[ 10 -lt 2 ]]; then echo 'impossible'; fi
+
+as the newline can be replaced by a semi-colon, which indicates the end of the expression.
+
+=== SLIDE - RECAP TESTS

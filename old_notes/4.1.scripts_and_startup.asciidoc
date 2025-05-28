@@ -1,0 +1,150 @@
+This section considers two related subjects:
+-   Shell scripts
+-   What happens when the shell is started up
+You’ve probably come across shell scripts, which won’t take long to cover, but shell startup is a useful but tricky topic that catches most people out at some point, and is worth understanding well.
+
+ mkdir -p itb_scripts_and_startups
+ cd itb_scripts_and_startups
+
+=== The `PATH` Variable
+What happens if you don’t specify the `./` and just run:
+
+ simple_script
+
+The truth I won’t know what happens. Either you’ll get an error saying it can’t find it, or it will work as before.
+The reason I don’t know is that it depends on how your `PATH` variable is set up in your environment.
+If you run this you will see your `PATH` variable:
+
+ echo $PATH
+
+The `PATH` variable is a set of directories, separated by colons. It could be as simple as:
+
+ echo $PATH
+
+for example. These are the directories bash looks through to find commands, in order.
+So what sets up the `PATH` variable if you did not? The answer is: bash startup scripts which are files like the above that get run on startup.
+But before we discuss them, how can we make sure that simple\_script can be run without using `./` at the front?
+
+ PATH=${PATH}:.
+ simple_script
+
+That’s how! In the first line you set the `PATH` to itself, plus the current working directory. It then looks through all the directories that were previously set in your `PATH` variable, and then finally tries the \`.’, or local folder, as we saw before. Beware that putting . in path is discouraged for security reasons. You could accidentally run a malicious script if one called 'ls' were in your PATH and you have . early in the PATH.
+
+=== Startup Scripts
+
+Understanding startup scripts and environment variables are key to a lot of issues that you can end up spending a lot of time debugging! If something works in one environment and not in another, the answer is often a difference in startup scripts and how they set up an environment.
+
+When bash starts up, it calls and runs a series of files to set up the environment you arrive at the terminal. If you’ve ever noticed that bash can ‘pause’ before giving you a prompt, it may be because the startup script is performing a command in the foreground. Have a look at this diagram:
+
+== SLIDE 46 - Startup Explained
+Yes, this can be confusing.
+The diagram shows the startup script order for different shells in different contexts. Each context is shown by following a separate colour through the diagram.
+We are going to follow (from the top) the path from the ‘bash’ bubble, and ignore the ‘zsh’ and ‘sh’ paths, but it’s interesting to note they have their own separate paths (in the case of zsh) and join up at points (in the case of ‘sh’ and ‘bash’).
+
+At each point in this graph the shell you choose either makes a decision about which path to follow (eg whether the shell is ‘interactive’ or not), or runs a script if the colour has already been determined from these decisions.
+
+We’ll walk through this below, which should make things clearer.
+
+=== When You Run Bash
+So which path does it take when you run `bash` on the command line? You’re going to follow the graph through here.
+The first decision you need to make is whether bash is running ‘normally’ or as a ‘remote’ shell (through ssh or rsh). Obviously, you ran bash interactively on a terminal, so it’s ‘normal’.
+From there, you decide if this is a ‘login’ or a ‘non-login’ shell. You did not login when you ran bash, so follow ‘non-login’.
+
+To find out if you are in a login shell, run
+
+ echo $0
+
+If the output has a '-' in front, it's a login shell. (It doesn't necessarily mean that you actually logged in.)
+
+On linux:
+
+ cat /etc/shells
+
+for a list of shells. Your login shell is in:
+
+ cat /etc/passwd
+
+and you can change your login shell with:
+
+ chpass
+
+The final decision is whether bash is running interactively (ie can you type things in, or is bash running a script?). You are on an interactive shell, so follow ‘interactive’.
+
+How do I know I'm interactive?
+
+----
+cat > int.sh << 'EOF'
+case "$-" in
+ *i*)   echo This shell is interactive ;;
+ *) echo This shell is not interactive ;;
+esac
+EOF
+chmod +x int.sh
+./int.sh
+source int.sh
+----
+
+
+Now, whichever colour line you have followed up to this point, continue with: those files are the ones that get run when bash is started up.
+If the file does not exist, it is simply ignored.
+To *further* complicate things, these scripts can be made to call each other in ways that confuse things if you simply believe that diagram. So be careful!
+Again, don't try to remember all this, just be aware that it can get complicated, and that these are the questions to consider when wondering why an environment variable is not set up.
+
+== SLIDE - Simpler Diagram
+== The `source` Builtin
+Now that you understand builtins, shell scripts, and environments, it’s a good time to introduce another builtin: `source`.
+
+ MYVAR=Hello
+ echo 'echo $MYVAR' > simple_echo
+ chmod +x simple_echo
+ ./simple_echo
+ source simple_echo
+
+`source` runs the script from within the same shell context. In other words, if I set a value in a script that's sourced, it will be set when the script finishes. It's as though it was included in my current context, or 'sourced'. You might source a set of bash library functions in a script, for example.
+A synonym for 'source' is the '.'
+
+ unset MYVAR
+ echo $MYVAR
+ echo 'MYVAR=1' > simple_echo
+ ./simple_echo
+ echo $MYVAR
+ . simple_echo
+ echo $MYVAR
+
+BTW Most shell scripts have a `.sh` suffix, but this is not required - the OS does not care or take any notice of the suffix.
+
+=== Avoiding Startup Scripts
+It's often useful to start up bash while avoiding all these startup scripts, to get bash in as raw a state as possible. When debugging, or testing core bash functionality, this can be invaluable.
+To acheive that, run this:
+
+ env -i bash --noprofile --norc
+
+`env` is a program that works on the environment. The effect of the `-i` flag is to remove the environment variables from the command you run. This means that exported variables will not get inherited by the bash program we are running. We're running the bash program itself with two flags. The `--noprofile` flag tells bash not to source the system-wide bash startup files, and the `--norc` tells
+bash not to source the personal ones in your home folder either.
+The end effect of this is that your shell has a very minimal set of variables available:
+
+ env
+
+This is great for debugging cron jobs, which run with a very limited environment. Because they are non-interactive.
+
+
+== EXERCISE
+https://learning.oreilly.com/scenarios/-/9781098138578/
+
+== SOLUTION
+cat > /root/script.sh << 'EOF'
+#!/bin/bash
+rm -f /root/standard /root/error
+for f in $(find /root/files -type f | xargs -n1 basename | sort)
+do
+  cd /root
+  folder=$(find . -type f | grep -w "$f$" | xargs -n1 dirname)
+  cd $folder
+  ls a*b* | grep $f || continue
+  ls ??????? | grep $f || continue
+  bash ./$f >> /root/standard 2>>/root/error
+done
+EOF
+chmod +x /root/script.sh
+/root/script.sh
+

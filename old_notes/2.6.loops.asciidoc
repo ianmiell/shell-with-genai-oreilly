@@ -1,0 +1,153 @@
+== SLIDE 38 - Loops
+Like almost any programming language, bash has loops.
+You will cover:
+
+- 'C'-style 'for' loops
+- 'for' loops over items 'in' a list
+- 'while' loops
+- 'case' statements
+
+== `for` Loops
+
+ mkdir itb_loops && cd itb_loops
+
+ for (( i=0; i < 20; i++ ))
+ do
+   echo $i
+   echo $i > file${i}.txt
+ done
+ ls
+
+You just created twenty files, each with a number in them using a `for` loop in the 'C' language style. Note there's no `$` sign involved in the variable when it’s in the double parentheses!
+
+The `((` construct gives a context for arithmetic evaluation. You can think of it like an escape route to arithmetic work in a more traditional language, like:
+
+ n=100
+ ((n++))
+ echo $n
+
+Note that the variables don't need a $ in this context.
+
+ for f in $(ls *txt)
+ do
+   echo "File $f contains: $(cat $f)"
+ done
+
+Danger here with spaces, but this idiom is handy.
+
+#=== `while`
+#While loops also exist in bash.
+#
+# n=0
+# while [[ ! -a newfile ]]
+# do
+#         ((n++))
+#         echo "In iteration $n"
+#         if [[ $(cat file${n}.txt) == "15" ]]
+#         then
+#                touch newfile
+#         fi
+# done
+#
+
+Basic while loop:
+
+n=0
+while [[ $n -lt 10 ]]
+do
+  ((n++))
+  echo iteration $n
+done
+
+=== break and continue
+
+Mention break and continue
+
+n=0
+while true
+do
+  ((n++))
+  echo $n
+  if [[ $n -gt 3 ]]
+  then
+    break
+  fi
+done
+
+
+=== `case` Statements
+Case statements may also be familiar from other languages. In bash, they’re most frequently used when processing command-line arguments within a script.
+Before you look at a realistic case statement, type in this trivial one:
+
+ a=1
+ case "$a" in
+ 1) echo 'a is 1'; echo 'ok';;
+ 2) echo 'a is 2'; echo 'ok';;
+ *) echo 'a is unmatched'; echo 'failure';;
+ esac
+
+There are a few of new bits of syntax you may not have seen before.
+
+First, the double semi-colons `;;` indicate that the next matching case is coming (rather than just another statement, as indicated by a single semi-colon).
+
+Next, the `1)` indicates what the `case` value ("\$a") should match. These values follow the globbing rules (so `*` will match anything). Try adding quotes around the values, or glob values, or matching a longer string with spaces.
+
+Finally, the `esac` indicates the `case` statement is finished.
+
+== `case` Statements and Command Line Options
+Introducing case statements, getopts and OPTARG
+Case statements are most often seen in the context of processing command-line options within shell scripts. There is a helper builtin just for this purpose: `getopts`.
+Now you will write a more realistic example, and more like what is seen in ‘real’ shell scripts that uses getopts.
+
+ #!/bin/bash
+ while getopts "ab:c" opt
+ do
+     case "$opt" in
+     a) echo '-a invoked';;
+     b) echo "-b invoked with argument: ${OPTARG}";;
+     c) echo '-c invoked';;
+     esac
+ done
+
+ chmod +x case.sh
+
+Run the above with various combinations and try and understand what’s happening:
+
+ ./case.sh -a
+ ./case.sh -b
+ ./case.sh -b "an argument"
+ ./case.sh -a -b -c
+ ./case.sh
+
+This is how many bash scripts pick up arguments from the command line and process them.
+
+== EXERCISE:
+
+https://learning.oreilly.com/scenarios/bash-fundamentals-challenge/9781098138448/
+
+== SOLUTIONS:
+
+## Task 1 Solution
+
+cat > 100files.sh << 'EOF'
+#!/bin/bash
+mkdir 100files
+for (( f=0; f<100; f++ ))
+do
+  touch 100files/${f}.txt
+done
+EOF
+chmod +x 100files.sh
+./100files.sh
+
+## Task 2 Solution
+
+cat > nfiles.sh << 'EOF'
+#!/bin/bash
+mkdir nfiles
+for ((i=1; i<=$1; i++))
+do
+  touch nfiles/${i}.txt
+done
+EOF
+chmod +x nfiles.sh

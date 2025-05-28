@@ -1,0 +1,70 @@
+First, check where we are in the filesystem:
+
+ pwd
+
+Then, create a folder with mkdir:
+
+ mkdir bashin3weeks
+
+Check the folder has this new folder in it
+
+ ls
+
+Move into the folder
+
+ cd bashin3weeks
+
+Create a file called 'first_script.sh'
+Don't worry about how we create this here. We will go over all the details later.
+But please remember the format, as you will need it for exercises.
+
+ cat > first_script.sh <<EOF
+ #!/bin/bash
+ echo Hello world
+ EOF
+
+Check the contents of the program with cat
+
+ cat first_script.sh
+
+Now try and run the script as a program
+
+ ./first_script.sh
+
+error! it's not executable. we need to make it executable, so we use the chmod command to make it executable:
+
+ chmod +x first_script.sh
+
+edit the script to output the arguments
+
+ #!/bin/bash
+ echo $1
+
+Now run it
+
+ ./first_script.sh Hello bash
+
+Note that spaces separate, so we can
+
+ ./first_script.sh "Hello bash"
+
+or edit to $1 $2
+
+ echo $1 $2
+
+ ./first_script.sh Hello bash
+
+Does not throw an error if not given
+
+ ./first_script.sh Hello
+
+What we did:
+
+- pwd
+- mkdir
+- ls
+- cd
+- cat (to show and create files)
+- chmod to make file executable
+- running a script in a local folder
+- script arguments

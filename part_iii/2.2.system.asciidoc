@@ -1,0 +1,163 @@
+=== Presentation: System commands
+Often you need to troubleshoot your system, or figure out what it's doing.
+We assume you are root in this section.
+
+== System commands can be operating-system specific
+
+MacOS
+Linux
+
+Shell can look same/similar, but commands can differ in behaviour or even not exist.
+
+eg
+top different on Mac
+strace does not exist, even equivalent (dtruss) is disabled by default.
+
+== ps
+Processes running on your system
+History of different versions
+
+ ps                                                             # show processes running in your shell session
+ ps -e                                                          # show all processes running on your machine
+ ps -A                                                          # same as -e
+ ps -ef                                                         # show fuller details for these processes
+
+== kill
+Mis-named - it actually sends signals to processes
+
+ sleep 192837 &                                                 # run a process in the background
+ ps -ef | grep sleep | grep 192837                              # get the pid
+ kill [PROCESS ID]                                              # try and politely terminate the process
+ sleep 192837 &                                                 # run same process in the background again
+ ps -ef | grep sleep | grep 192837                              # get the pid
+ kill -9 [PROCESS ID]                                           # try to force termination of the process, not the different description
+
+== top
+Grandparent of all these other applications
+How to read it. Top of top.
+There are different versions, so your mileage may vary.
+
+ top                                                            # top command; q to quit
+
+h   # for help
+
+f   # manage fields
+s   # set sort field
+
+x   # highlight sort field
+z   # colorize
+
+ top -n 1                                                       # top with only one iteration
+ top -b -n 1                                                    # top with only one iteration in 'batch' mode
+
+== watch
+Useful for debugging on the fly, eg
+
+ watch -d top -b -n 1                                           # watch for changes running top
+
+== systemctl
+Used for control processes on the system
+
+As root
+
+ systemctl                                                      # items running on your system under systemd control
+ systemctl status                                               # status of above items
+
+Explain output
+
+ systemctl status postgresql                                    # look at status of specific service
+
+Explain output
+
+ journalctl -u postgresql                                       # try looking at it as a 'normal' user
+ sudo journalctl -u posgresql                                   # if that doesn't work, try as root
+
+Key config files:
+
+ /etc/systemd/system
+ /etc/systemd/system/[target name].target.wants                 # contains services that are part of the target name
+
+== lsof
+Which files are opened on the system? By a process?
+Since 'everything is a file' in Linux, this covers things like network connections and so on.
+
+ lsof                                                           # a lot of output...
+
+talk about how to read the output
+
+ man lsof                                                       # look at type of file, q to quit
+
+Show files open associated with a command:
+
+ lsof -c ls                                                     # show files open associated with a command
+
+Show files open associated with a port:
+
+ lsof -i :80                                                   # show files open and associated with a port
+
+Show files associated with a process:
+
+ lsof -p 1                                                      # show files associated with the 'root' or 'init' process
+
+== strace
+Operating system calls:
+
+ strace ls                                                      # show system calls for ls command
+ strace -e read ls                                              # show all calls to read system call for ls
+ strace -e read -s 1024 ls                                      # show all calls to read system call and show 1024 characters of data
+ strace -e read -s 1024 -o out ls                               # as above, but write output to a file
+ strace -e read,write -s 1000 curl bbc.co.uk                    # show all read and write system calls to a curl of bbc
+ strace -t -e read,write -s 1000 curl bbc.co.uk                 # as above with time flag
+ strace -tt -e read,write -s 1000 curl bbc.co.uk                # as above with a further time flag
+ strace -ttt -e read,write -s 1000 curl bbc.co.uk               # as above with another time flag
+ strace -c ls                                                   # summarise system calls
+
+Follow processes:
+
+ strace -o nofollow curl bbc.co.uk                              # capture curl to a file
+ strace -f -o follow curl bbc.co.uk                             # as above, but follow child processes
+
+Diff the two to see where they part. clone is different call:
+
+ sdiff follow nofollow                                          # side by side diff
+
+Google linux api syscall tables, eg:
+https://chromium.googlesource.com/chromiumos/docs/+/master/constants/syscalls.md
+https://man7.org/linux/man-pages/man2/clone.2.html
+
+= EXERCISE
+https://learning.oreilly.com/scenarios/bash-fundamentals-challenge/9781098138592/
+
+= SOLUTION
+## Task 1 Solution
+
+cat > /root/count.sh << 'EOF'
+#!/bin/bash
+numfolders="$(find * -type d | wc -l)"
+numfiles="$(find * -type f | wc -l)"
+numsecrets="$(find * -type f | xargs -n 1 grep secret | wc -l)"
+linesinfiles="$(find * -type f | xargs cat | wc -l)"
+echo ${numfolders} ${numfiles} ${linesinfiles} ${numsecrets}
+EOF
+chmod +x /root/count.sh
+
+
+## Task 2 Solution
+
+cat > /root/run.sh << 'EOF'
+#!/bin/bash
+for ((i=4; i<=9; i++))
+do
+  cd /root/files/dir${i}
+  /root/count.sh > /tmp/dir${i}.txt &
+  cd - >/dev/null
+done
+wait
+totalnumfolders=$(cat /tmp/dir*txt | awk '{s+=$1} END {print s}')
+totalnumfiles=$(cat /tmp/dir*txt | awk '{s+=$2} END {print s}')
+totallinesinfiles=$(cat /tmp/dir*txt | awk '{s+=$3} END {print s}')
+totalnumsecrets=$(cat /tmp/dir*txt | awk '{s+=$4} END {print s}')
+echo ${totalnumfolders} ${totalnumfiles} ${totallinesinfiles} ${totalnumsecrets}
+EOF
+chmod +x /root/run.sh
+

@@ -1,0 +1,196 @@
+== PREP
+Go to bacon and set up bash (for system commands)
+
+== The `set` Builtin
+When using bash it is very important to understand what options are, how to set them, and how this can affect the running of your scripts.
+In this section you will become familiar with the `set` builtin, which allows you to manipulate these options within your scripts.
+You will cover:
+- The `set` command
+- What POSIX is
+- Some useful options to set when scripting
+
+== Running `set`
+Create a function
+
+ function a {
+  echo in a
+ }
+ a
+
+Run set
+
+ set
+
+This will produce a stream of output that represents the state of your shell, similar to `declare` which we saw earlier. `set` is a much richer command with many other functions.
+In the normal case, you will see all the variables and functions set in your environment.
+But my bash man page says:
+
+ man bash
+
+'Without options, the name and value of each shell variable are displayed in a format that can be reused as input for setting or resetting the currently-set variables. Read-only variables cannot be reset. In posix mode, only shell variables are listed.'
+
+**Portable Operating System Interface**(**POSIX**) is a family of [standards](https://en.wikipedia.org/wiki/Standardization) specified by the [IEEE Computer Society](https://en.wikipedia.org/wiki/IEEE_Computer_Society) for maintaining compatibility between [operating systems](https://en.wikipedia.org/wiki/Operating_system).
+
+Can you work out from your `set` output whether you are in posix mode? Well, we can see functions, so looks like we are not.
+
+ set -o posix
+
+switches on the posix option
+
+ set
+ set +o posix
+ set
+
++o switches it off.  I have trouble remembering that. To show how all your options are set type this:
+
+ set -o
+
+and you will see the current state of all your options. we’re only going to focus on a couple that I use all the time.
+
+=== `set` vs `env`
+One thing that can confuse people is that the output of `set` is similar to the output of `env`, but different.
+
+ set
+ env
+
+The difference is that *exported* variables are shown by env, not all the variables set in the shell. A function is here considered a kind of variable.
+Mention declare here, which we've talked about in the past.
+
+== Useful Options for Scripting
+Where set becomes really useful to understand is in scripting. For example, I set these three up every time I start writing a shell script:
+
+ set -o errexit
+ set -o xtrace
+ set -o nounset
+
+Although you don’t need to be in a script for them to work.
+The `errexit` option tells bash to exit the script if any command fails.
+The `xtrace` option outputs each command as it is being run. This is really useful for seeing what command was actually run if (for example) you are using variables within your commands. It also helps you see the order in which commands are being run.
+The `nounset` option gets bash to throw an error if a variable is not set when it is referred to.
+
+see how this works in practice, create ascript.sh:
+
+ vi ascript.sh
+
+ #!/bin/bash
+ set -o errexit
+ set -o xtrace
+ set -o nounset
+ pwd
+ cd $HOME
+ cd -
+ echo $DOESNOTEXIST
+ echo "should not get here"
+
+ chmod +x ascript.sh
+ ./ascript.sh
+
+Explain output.
+
+=== Flags With `set` Instead of Names
+For each `set` option, you can use a flag instead. For example, this:
+
+ set -e
+ set -x
+
+is the same as:
+
+ set -o errexit
+ set -o xtrace
+
+I generally prefer the name form rather than flag, just because it’s easier to read. You can find all these in the man page.
+
+=== Profiling Bash Scripts
+Returning to the `xtrace` (or `set -x`) flag, we can exploit its use of a PS shell variable to implement the profiling of a script:
+
+----
+#!/bin/bash
+set -o nounset
+set -o xtrace
+A="some value"
+PS4='$(gdate "+%s%N => ")'
+B=
+echo "${A}"
+A="another value"
+echo "${A}"
+echo "${B}"
+pwd
+sleep 1
+pwd
+----
+
+If you are on a Mac, then you might only get second-level granularity on the date! Important gotcha about shell PORTABILITY. Try `gdate` instead.
+
+Important point about commands - they differ.
+
+date above vs gdate. (no version option)
+
+=== `set` vs `shopt`
+there are two ways to set bash options from within scripts or on the command line.
+You can use the `set` builtin command, or the `shopt` builtin command.
+They both manipulate the behaviour of the shell, and differ for historical reasons.
+The set options are inherited, or borrowed, from other shells’ options, while the `shopt` ones (mostly) originated in bash.
+Just to demonstrate one option that you might find useful, the `globstar` option allows
+you to use two asterisks to match all files in the local directory and all subdirectories:
+
+ shopt -s globstar
+ ls **
+
+If you have a lot of files in your subfolders, then it might take a long time to return, or even fail (see /space/git/learn-bash-the-hard-way). ALso, only available in bash 4!
+
+
+== Debugging Bash Scripts
+Create debug_script.sh
+
+ #!/bin/bash
+ A=some value
+ echo "${A}
+ echo "${B}"
+
+Now run it with the -n flag. This flag only parses the script, rather than running it. It’s useful for detecting basic syntax errors.
+BTW you can run script without making them executable by running them 'under' the bash command.
+
+ bash -n debug_script.sh
+
+It’s broken. Fix it. Then run it:
+
+ bash debug_script.sh
+
+run with `-v` to see the verbose output. There's still a problem.
+
+ bash -v debug_script.sh
+
+We can see that the problem is after line 3. tracing to see more details about what’s going on. Each statement gets a new line beginning with a plus sign.
+
+ bash -x debug_script.sh
+
+If thinks that value is a separate command, because we haven't put the string into quotes.
+Using these flags together can help debug scripts where there is an elementary error, or even just working out what’s going on when a script runs. I used it only yesterday to figure out why a systemctl service wasn’t running or logging. Fix the error you see before continuing.
+
+=== Shellcheck
+Shellcheck is a website (<http://www.shellcheck.net/>) and a package that gives you advice to help fix and improve your shell scripts. Very often, its advice has prompted me to research more deeply and understand bash better.
+
+ cat > script.sh << 'EOF'
+ #!/bin/bash
+ A=some value
+ echo "${A}
+ echo "${B}"
+ EOF
+
+ shellcheck script.sh
+
+= EXERCISE
+https://learning.oreilly.com/scenarios/bash-fundamentals-challenge/9781098138585/
+
+= SOLUTION
+Manual
+
+run shellcheck
+- line 91: Add :i to the list of options
+- line 115: Add " at end of line
+- line 158: if block is long, so comment out anything possible wrong and re-run shellcheck. then spot fi missing on line 175
+- line 130: Add quotes as directed
+- line 153: pushd || exit
+- line 161, 164, 166, 169, 176
+
+run /root/testrun.sh

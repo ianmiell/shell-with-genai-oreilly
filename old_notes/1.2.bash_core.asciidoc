@@ -1,0 +1,52 @@
+SLIDE 14 - What is Bash?
+Bash is a shell program.
+A shell program is typically an executable binary that takes commands that you type and (once you hit return), translates those commands into (ultimately) system calls to the Operating System API.
+A binary is a file that contains the instructions for a program, ie it is a ‘program’ file, rather than a ‘text’ file, or an ‘application’ file (such as a Word document).
+If you're not sure what this means, then don't worry. You only need to know that a shell program is a program that allows you to tell the computer what to do.  In that way, it's not much different to many other kinds of programming languages.
+What makes bash different from some other languages is that it is a language designed to 'glue' together other programs.
+In this section, you will learn a little about the history of bash and other related shells.
+
+SLIDE 15 - OTHER SHELLS
+Other shells include:
+These other shells have different rules, conventions, logic, and histories that means they can look similar.
+Because other shells are also programs, they can be run from within one another!
+
+SLIDE 18 - WALKTHROUGH
+Here you run tcsh from within your bash terminal. Note that you get a different prompt (by default):
+
+ tcsh
+ echo $dirstack
+ exit
+
+(dirstack keeps track of directories you push onto the stack with `pushd`. `pushd` is available in bash too.
+Typically, a `tcsh` will give you a prompt with a percent sign, while bash will give you a prompt with a dollar sign. This is configurable, though, so your setup may be different.
+The `dirstack` variable is set by tcsh and will output something meaningful.  It’s not there by default in bash (try typing the echo commmand in when you are back in the bash shell at the end!)
+
+ echo $dirstack
+
+You can also run bash from within bash.
+
+ bash
+ exit
+
+This gets you the process ID of this bash process. Here it is one value.
+
+ echo $$
+
+and here another:
+
+ bash
+ echo $$
+ exit
+
+SLIDE 19 - HISTORY
+This diagram helps give a picture of the history of bash:
+Bash is called the ‘Bourne Again SHell’. It is a descendant of the ‘Thompson Shell’ and then the Bourne ‘sh’ shell. Bash has other ‘siblings’ (eg ksh), ‘cousins’ (eg tcsh), and ‘children’, eg ‘zsh’.
+The details aren’t important, but it’s important to know that different shells exist and they can be related and somewhat compatible.
+
+SLIDE 20 - MARKET
+Bash is the most widely seen and used shell as of 2017. However, it is still not unheard of to end up on servers that do not have bash!
+zsh is used on macs by default. But it's very rare to see scripts written in zsh, most are in bash.
+
+What is the difference between bash and zsh.
+A little and a lot. At the core syntax level, zsh and bash have very few real differences. In practice, there are many differences in how they are actually used especially with respect to 'extras'. Zsh shells have a lot of customizations and options set differently or non-existent in bash, and a culture of plugins and other 'improvements' to the core shell. It's best thought of as a turbo-charged bash.

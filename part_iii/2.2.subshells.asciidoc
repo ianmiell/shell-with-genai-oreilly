@@ -1,0 +1,133 @@
+== SLIDE 52 - Subshells
+The concept of subshells is not a complicated one, but can lead to a little confusion at times, and occasionally is very useful.
+You will cover:
+- How to create a subshell
+- Why they are useful
+- Comparison to curly-braced blocks
+
+== Subshells
+
+Type this in to see a subshell in action:
+
+ mkdir itb_subshells && cd lbthw_subshells
+
+Create a variable in your 'main' shell:
+
+ VAR1='the original variable'
+
+Now create a 'subshell':
+
+ (
+
+You'll notice the prompt has changed. Now try and echo something:
+
+ echo Inside the subshell
+
+It's not been run. This is because the subshell's instructions aren't run until the parenthesis has been closed. Next we'll try and echo the variable we created outside.
+
+ echo ${VAR1}
+
+Then update that variable to another value, and echo it again:
+
+ VAR1='the updated variable'
+ echo ${VAR1}
+
+And finally create another variable, before closing the subshell out:
+
+ VAR2='the second variable'
+ echo ${VAR2}
+ )
+
+So a subshell is a shell that inherits variables from the parent shell, and whose running is deferred until the parentheses are closed.
+
+ echo $VAR1
+
+VAR1 hasn't been overwritten
+
+ echo $VAR2
+
+VAR2 doesn't exist
+
+=== Subshells and Scope
+What happened to the variable you updated inside the subshell?
+
+    $ echo ${VAR1}
+
+Now you now know that variables can mask their parent shell's value within the subshell. This is very handy to know if you want to do something in a slightly modified environment, but not have to manage variables' previous values. What happens if we try `export`ing the variable? Will that 'export' it to the parent shell?
+
+ (
+ export VAR1='the first variable exported'
+ )
+ echo ${VAR1}
+
+No! exports only go into subprocesses, not upwards to parent processes!
+
+=== Subshells and Redirection
+
+One often useful property of subshells is the fact that the code is treated as a single unit. You can therefore redirect output from a set of commands wholesale.
+
+ echo Some output, ls to follow >> logfile
+ ls >> logfile
+
+which is fine for a couple of lines, but what if you have hundreds of lines like this? It leads to quite inelegant code. Instead, you can write:
+
+ (
+ echo Some output, ls to follow
+ ls
+ ) >> logfile
+
+which is much neater and easier to manage.
+
+=== Subshells and Working Directory
+Another useful feature of subshells is that if you change folder, then that folder change only applies within the subshell. When you return, you go back to where you were.
+Let's see this in action. First show where you are:
+
+ pwd
+
+Then, in a subshell, create a folder, move into it, and show you have moved with another call to pwd.
+
+ ( mkdir itb_subshells_2
+ cd itb_subshells_2
+ pwd )
+
+Now the subshell has run, and without doing anything other than `cd`ing to a new folder, we are returned to the folder we were in before the subshell started:
+
+ pwd
+
+This is a very useful feature of subshells when you're scripting, to save repeated `cd` and `cd -` commands.
+
+=================
+example loop with this idea? Setup:
+
+ mkdir itb_subshells_3
+ cd itb_subshells_3
+ mkdir a b c
+
+loop:
+
+ for f in a b c
+ do
+   (
+     cd $f
+     echo creating file in $f
+     touch newfile
+   )
+ done
+
+
+== EXERCISE
+https://learning.oreilly.com/scenarios/bash-fundamentals-challenge/9781098138554/
+
+== SOLUTION
+cat > /root/script.sh << 'EOF'
+#!/bin/bash
+for f in $(find /root/files/* -type d | sort)
+do
+  (
+    cd $f
+    diff $(ls | head -1) $(ls | tail -1) >> /root/output.log
+  )
+done
+EOF
+chmod +x /root/script.sh
+/root/script.sh

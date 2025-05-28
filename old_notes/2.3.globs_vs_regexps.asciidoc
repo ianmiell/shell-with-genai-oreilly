@@ -1,0 +1,178 @@
+== SLIDE 25 - BASIC GLOBBING Activity
+
+ mkdir itb_glob
+ cd itb_glob
+ touch file1 file2 file3
+ ls
+
+Shell scans your line, finds the star, replaces all files before running the command.
+
+ ls *
+
+If you want to see how bash 'sees' any line, you can use echo:
+
+ echo *
+ echo ls *
+
+This is the same as the expansion bash does before running the command.
+So a glob is a type of character that is interpreted in a special way by the shell if it's just an argument on a line.
+
+=== Globbing and Quoting
+
+ echo ls '*'
+
+You might expect this, as it's similar to what we saw with variables:
+
+ echo '$HOME'
+
+so you might expect this to expand to files:
+
+ ls "*"
+
+Tricky! This is difficult even if you are an 'expert' in bash!
+We might have expected, based on our experience with variables and the $ that this would expand. But the rules around quoting with globs is different than with variables.
+Quoting in bash is a very tricky topic. You may want to take from this that quoting globs removes their effect. But in other contexts single and double quotes have different meanings.
+Quoting changes the way bash can read the line, making it decide whether to take these characters and transform them into something else, or just leave them be.
+What you should take from this is that "quoting in bash is tricky" and be prepared for some head-scratching later!
+Globs don't need to be alone, they can be mixed with other characters eg:
+
+ ls *1
+
+== Other Glob Characters
+character classes, similar to regular expressions. You can specify a set of characters that might match.
+
+ ls file[12]
+ ls file[a-z]      # doesn't return anything
+ ls fil[a-z][0-9]  # returns all files
+
+The '?' is a special character in globbing. Different to regexps where (by contrast) dot means 'any character'. This is '?' in globbing. This is one of the ways they can look similar.
+
+ echo file?
+
+=== Dotfiles
+Relevant here while talking about dots, worth talking about dotfiles because it can confuse people.
+Dotfiles are like normal files, except their name begins with a dot. Create some with `touch` and `mkdir`:
+
+ touch .adotfile
+ mkdir .adotfolder
+ touch .adotfolder/file1 .adotfolder/.adotfile
+
+If you run `ls`:
+
+ ls
+
+those files don't show up. So these files are hidden from us in normal view. What if we try to use a * as a glob to try to match all files?
+
+ ls *
+
+Those files are still hidden. Why?
+Useful to have files that don't match * in loops over files etc as we will see later
+Used often for configuration or meta-data. What if you really do want to see all the dotfiles files?
+
+ echo .*
+
+Here the dot has no special meaning. It's literally a dot. What if you run ls?
+
+ ls .*
+
+you get a slightly more complicated output, as `ls` returns richer output depending on whether the item is a file or a folder. If it's a folder, it shows every file within that folder under a separate heading. I spent years typing 'ls .*' thinking it meant all files, and ignoring the fact that it didn't quite do what I expected.
+
+It is the same as:
+
+ ls .adotfile .adotfolder . ..
+
+and because .adotfolder is a folder, it outputs the contents of that folder
+
+== . and ..
+
+You'll also get a couple of extra 'special' folders returned that may not have been aware of before.
+The single dot folder (`.`) is a special folder that represents the folder that you are in. For example, if you type:
+
+ cd .
+
+You will go nowhere! You've 'changed' directory to the same folder that you are in.
+The double dot folder (`..`) is a special folder that represents the folder that represents the parent folder of the one you are in.
+What do you think happens at the root folder (`/`)? Have a look and find out.
+
+== Differences to Regular Expressions
+While globs look similar to regular expressions (regexes), they are used in different contexts and are separate things. Many of you will be familiar with grep so I will use that.
+If you don’t know what grep is, you will need to learn. This is a good place to start: <https://en.wikipedia.org/wiki/Grep> link in github repo README.
+grep uses regular expressions, not globs. In grep '*' does not select all lines, '.*' does. Because dots mean 'any character' in regexps and '*' means any number of the last character matched from 0 to infinity. Regexps are generally more complex than globs, and are more commonly used in programming languages than globs. Pretty much you only see globs in file finder applications and the shell.
+
+ echo text > afile
+ cat afile
+ grep text afile
+ grep '*' afile                # no match
+ grep '.*' afile               # matches
+ echo '*' > afile
+ cat afile
+ grep '*' afile                # matches
+ grep '.*' afile               # matches
+
+The '.*' in a grep is therefore different to the '.*' in a glob. That's what you need to understand. Historically they came out of the same root in linguistic analysis, but at some point they developed different standards, and the dot's special meaning in regular expressions was added to the basic glob idea.
+
+=== CHATGPT
+A glob is a type of pattern used to match filenames or other strings. A glob pattern only provides a very simple form of pattern matching:
+
+The wildcard character * matches zero or more of any characters.
+The character ? matches exactly one of any character.
+Characters enclosed in square brackets [] match exactly one character listed in the brackets.
+For example, the glob pattern *.txt matches any string (filename) that ends with .txt.
+
+Regexes (Regular Expressions)
+A regular expression, or regex, is a sequence of characters that forms a search pattern. Regexes are used in programming to find, match, and replace strings. Unlike globs, regexes have a much more complex and flexible syntax and can match a wide variety of string patterns.
+
+For example, the regex a.b matches any string that contains an "a", any character, and then a "b" (like "acb", "aab", "a3b", and so on).
+
+Now, onto the differences:
+
+Complexity: Regexes are more powerful and flexible than globs. They can handle complex patterns and conditions that globs cannot.
+
+Usage: Globs are commonly used for filename expansion in Unix-based operating systems, while regexes are used in programming and text processing for a wider range of tasks including validation, parsing, and filtering.
+
+Learning curve: Globs are generally easier to understand and use for beginners, while regexes require a bit more study to use effectively because of their complex syntax.
+
+Specificity: Regexes can be very precise, allowing for intricate patterns to be defined. On the other hand, globs are more straightforward and less precise, but sometimes that's all you need.
+
+In summary, globs and regexes both serve to match patterns in strings. However, regexes are more powerful and complex, suitable for a wide range of programming and text processing tasks, while globs are simpler and are commonly used for matching filenames in Unix-based systems.
+
+
+
+=== OLD
+I get a lot of questions about what the difference between regexps and globs is.
+We will go into more depth on this later in the course.
+This is a very quick explanation of the difference.
+
+They look really similar and do similar things, but have a slightly different history so have come to be separate.
+
+When you run, eg:
+
+ ls *
+
+The '*' is a glob that is interpreted by the command line shell. It basically means 'match any filename characters in the folder I am in'.
+When you run, eg:
+
+ echo 'Some text' > afile
+ grep '.*' afile
+
+Note the quotes. This means the shell ignores what's in the quotes, and passes it as an argument to grep. Remove the quotes, and it is treated as a glob by the shell, which can give different results.
+
+ grep .* afile
+
+Note the filename here. Maybe set -o xtrace to show the difference.
+
+ grep * afile
+
+In the original grep command (grep '.*' afile) but the '*' has quite a different meaning. Here the star means 'match 0 or more of the previous character'. The previous character here is '.', which means 'any character'. In globs, '.' has no special meaning. Its equivalent is '?'.
+
+Regexps and globs are a bigger subject than this, and regexps particularly are quite a skill to master. What's important here is to understand that they are different.
+
+We will cover regexps in more detail later today when we look at the grep command.
+
+Reference:
+
+https://zwischenzugs.com/2022/09/28/a-little-shell-rabbit-hole/
+
+== SLIDE 24 - Globbing
+What does * mean?
+How different from regular expressions? If you're not familiar with regexps don't worry. Just be aware that globs != regexps.

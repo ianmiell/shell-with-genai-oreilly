@@ -1,0 +1,168 @@
+== Traps and Signals
+Signals are a fundamental part of Linux processes. Signals (as the name suggests) are a way for simple messages to be sent to processes (whether in the background or not).
+- What a signal is
+- How the `kill` command works
+- How to trap signals
+
+standard exit codes
+exit code from a script
+return code from a function
+
+grep and exit codes - if grep blah asd
+
+=== Triggering Signals
+What is a signal? A signal is a message you can send to a running process, and that it can respond to in various ways. The rules around signals can get messy and complex.
+
+ man signal
+
+Relate it back:
+An easy way to trigger a signal is one you will likely already have used.
+
+ sleep 999 # NOW HIT CTRL, HOLD IT DOWN AND THEN HIT C (CTRL-c)
+ echo $?
+
+You should have got the output of a number over 128. Remember that `$?` is a special variable that gives the exit code of the last-run command. We covered exit codes 0, 1, 127.
+Exit codes over 128 indicate that a SIGNAL triggered the exit, and that to determine the signal number you take 128 away from the number you saw. The signals are usually documented in the ‘signal’ man page.
+
+ man signal
+
+What was the signal number of the CTRL-C? 128 = 130 - SIG => SIG = 128, SIG=2. Now try another keyboard signal:
+
+ sleep 999 # NOW HIT CTRL, HOLD IT DOWN AND THEN HIT Z (CTRL-z)
+ echo $?
+ jobs
+ kill %1
+
+Which signal does `CTRL-z` trigger? 146 - 18 = 128 => 18=SIGTSTP
+
+=== `kill`
+Another way to send a signal to a process is another one you have already come across: the `kill` command.
+The `kill` command is misnamed, because it needn’t be used to terminate a process.
+By default, it sends the signal 15 (`TERM`), which (similar to 2) usually has the effect of terminating the program, but as the name suggests, is a stronger signal to terminate than `INT` (interrupt).
+
+ sleep 999 &
+ KILLPID=$!
+
+$! is a special variable that gives the process id of the last backgrounded task.
+
+ echo ${KILLPID}
+ kill -15 ${KILLPID}
+ echo $?
+
+returns immediately
+Why the echo after the kill outputs 0 and not 130? (because the kill succeeded, and that's what was returned - the backgrounded process is not returned). Instead of `-2` in the above listing, you can use the signal name. Either `-TERM` or `-SIGTERM` will work.
+
+=== The ':'
+We're about to use it, so mentioning here.
+
+ :
+
+: is a no-op. It returns true.
+
+ : you can type anything here
+ echo $?
+
+It's great for commenting chains of commands:
+
+ cd /tmp && : now in tmp folder && cd - && : now back in previous folder
+
+=== Trapping Signals
+Type out this first and hit ctrl-c
+
+ while :; do sleep 5; done
+
+Pretty simple, right? Just goes on forever. Now type out this one and follow the instruction:
+
+ mkdir -p bns_traps && cd bns_traps
+ cat > trap_exit.sh << END
+   #!/bin/bash
+   trap "echo trapped" INT
+   while :; do sleep 5; done
+ END
+ chmod +x trap_exit.sh
+ ./trap_exit.sh # NOW HIT CTRL-c
+
+What’s going on? In the second listing you used the `trap` builtin to inhibit the default response of the trap\_exit process in the bash process and replace it with another response. In this case, the first argument to the `trap` builtin is evaluated and run as a command (`echo trapped`). So how to get out of it and kill off the process?
+
+ # HIT CTRL-z
+ kill %1
+
+=== Trap Exit
+In addition to the normal signal name traps in the man page, there are some special ones.
+
+ #!/bin/bash
+ trap "echo trapped" EXIT
+ sleep 999 &
+ wait
+
+ ./trap_exit.sh &
+ TRAP_EXIT_PID=$!
+ kill -15 ${TRAP_EXIT_PID}
+
+The `EXIT` trap catches the termination of the script whatever the signal and runs the command before it exits. But it still EXITS!
+
+ ps -ef | grep sleep
+
+ ./trap_exit.sh &
+ TRAP_EXIT_PID=$!
+ kill -9 ${TRAP_EXIT_PID}
+
+Some of the signals are not trap-able! Why do you think this is? Experiment with some other signals to determine how `EXIT` handles them.  What is the name of the `-9` signal? Is this the default that the `kill` command uses?
+
+=== Controlling Jobs With Signals
+As well as starting jobs, you can control jobs by sending signals to them. Here you're going to start two jobs, one to sleep for two minutes, and the next for one second more (so we can distinguish between them).
+
+ sleep 120 &
+ sleep 121 &
+
+Now you have two jobs running in the background. You can find out what their status is using the `jobs` builtin:
+
+ jobs
+ [1]-  Running                 sleep 120 &
+ [2]+  Running                 sleep 121 &
+
+Each job is identified by its number in square brackets, followed by a plus or a minus sign. The plus sign indicates which job will be brought to the foreground if you run the `fg` builtin.
+Let's do that here:
+
+ fg
+ sleep 121
+
+The `sleep 121` process is now running in the foreground. Bash lets you know this by outputting the foregrounded command to the terminal.
+Now send the `STOP` signal to the foregrounded process by hitting `\C-z`.
+
+ [2]+  Stopped                 sleep 121
+
+Again, you see the job number, the plus sign, and the status ('`Stopped`'). If we want the process to continue to run, then you need to use the `bg` builtin:
+
+ bg
+ [2]+ sleep 121 &
+
+The process has been continued from its stopped state. If you've taken over two minutes to do all this then you may get a report that the process has terminated with a message that they are '`Done`'. If so, start the two sleep commands again and get back to here.
+Now that you have the two sleeps running in the background, you can send other signals to them. For example, you can kill them:
+
+ kill %1
+ RETURN
+ [1]+  Terminated: 15          sleep 120
+
+The per cent sign followed by a number is called a 'job specification' and is the way you can tell bash you want to operate on that job number. Of course, you can also send a signal by using the process identifier as well.
+
+=== RECAP
+- Job control using signals
+- Job specifications
+- The `fg` and `bg` builtins
+
+== EXERCISE
+https://learning.oreilly.com/scenarios/bash-fundamentals-challenge/9781098138721/
+
+== SOLUTION
+
+cat > trap.sh << EOF
+#!/bin/bash
+trap 'echo exiting' EXIT
+trap 'echo int' INT
+while true
+do
+  sleep 99
+done
+EOF
+chmod +x trap.sh

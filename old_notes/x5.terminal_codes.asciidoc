@@ -1,0 +1,386 @@
+Terminal Codes and Non-Standard Characters {#_terminal_codes_and_non_standard_characters}
+
+Although not directly related to bash, if you spend any time at a terminal, then
+it will pay off to understand how the terminal works with non-standard
+characters.
+
+You've already learned about the readline library and terminal options and how
+certain keystrokes can be 'caught' and handled in other ways before they get
+to the terminal. Here we look at how other non-standard can be handled in the
+bash shell.
+
+Non-standard characters are characters like ‘tab’, ‘newline’, ‘carriage return’,
+and even the ‘end of file’ characters. They don’t form part of words, or
+necessarily print anything to the screen, but they are bytes interpreted by the
+shell and the terminal if they get that far.
+
+In this section you’ll:
+
+-   Understand how to output any byte with echo
+
+-   Understand how to input a character while by-passing terminal options and the readline library
+
+-   Learn about carriage returns and newlines and how they are used
+
+-   Learn how to use hexdump
+
+-   Learn about standard terminal escape codes
+
+A> ## Note
+A>
+A> The focus here is on ANSI-standard escape codes. Rarely, you might come across
+A> more complex escapes for specific terminal contexts, but this is beyond the
+A> scope of a ‘practical’ guide.
+
+### How Important is this Section? {#_how_important_is_this_section}
+
+This section is somewhat more advanced, and probably not essential to using
+bash at the start. It can also be hard to grasp, so if you're new to bash
+I recommend returning to it later if it's hard to understand the first
+time you read it.
+
+However, knowledge of this area will catapult you to an elite that understand
+how terminals can be manipulated, and also enable you to understand how your
+prompt can be manipulated.
+
+### Non-Printable Characters {#_non_printable_characters}
+
+The terminal you use has what are described can output ‘printable’ characters and
+’non-printable’ characters.
+
+For example, typing a character like ‘a’ (normally) results in the terminal
+adding an ‘a’ to the screen. But there are other characters that tell the
+terminal to do different things that don’t necessarily involve writing a
+character you'd recognise.
+
+It’s easy to forget this, but not everything that is sent to the computer is directly
+printed to the screen. The terminal ‘driver’ takes what it is given (which is
+one or more bytes) and decides what to do with it. It might decide to print it
+(if it’s a ‘normal’ character), or it might tell the computer to emit a beep,
+or it might change the color of the terminal, or delete and go back a space,
+or it might send a message to the running program to tell it to exit.
+
+When looking at non-printable characters, it’s useful to be aware of a couple of
+utilities that help you understand what’s going on. The first of these is a
+familiar one: `echo`.
+
+### Using `echo` {#_using_literal_echo_literal}
+
+You’re already familiar with echo, but it has some sometimes-useful flags you've
+not already used in this book:
+
+{line-numbers=on,starting-line-number=1}
+    $ echo -n 'JUST THESE CHARACTERS'
+
+The -n flag tells echo not to print a newline.
+
+{line-numbers=on,starting-line-number=2}
+    $ echo -n $'JUST THESE CHARACTERS AND A NEWLINE\n'
+
+The `$` before the string makes us sure that bash will interpret `\n` as a newline
+on the screen, and won't just print out the characters`\n`. Try it without the
+`$` if you're unsure.
+
+Here, it is the backslash character `\` that makes `echo` aware that a 'special'
+character is coming up. Being able to add a newline in this way means that
+you can send a newline to the terminal via the echo command, without confusing
+the command line by hitting the return key.
+
+Other special characters include `\b` (for backspace), `\t` (for tab) and `\\`
+(to output a backslash):
+
+Before you hit return, have a guess as to what this will output?
+
+{line-numbers=on,starting-line-number=3}
+    $ echo -n $'a\bb\bcde\bfg\b\b\b\n'
+
+If you guessed correctly, then well done! If you're struggling to understand
+what happened, note that a backspace does not delete the previous character, it
+just moves the cursor back a space.
+
+You can also send a specific byte value to the terminal by specifying its hex value:
+
+{line-numbers=on,starting-line-number=4}
+    $ echo -n $'\x20\n'
+
+Think about that - you can use `echo` with these flags to control *exactly* what
+gets sent to the screen. This is extremely valuable for debugging, or controlling
+what gets sent to the terminal.
+
+It also bypasses the 'catching' of some characters you've seen from the previous readline
+section.
+
+### `CTRL-v` Escaping {#_ctrl_v_escaping}
+
+Being able to output any binary value to the screen that we choose is useful,
+but what if we want to just output a ‘special’ character, and bypass the terminal's
+interpretation via terminal options or the readline library?
+
+For example, if I hit ‘tab’ in my terminal it would normally *not* show a tab
+character (or move my cursor along a few spaces), as the readline library uses the tab
+key (if hit twice in a row) to auto-complete any text we have not finished.
+
+But if I’m typing something like:
+
+{line-numbers=on,starting-line-number=5}
+    $ echo 'I want a tab here:>X<a tab'
+
+How do I get a 'real' tab where the ‘X’ is?
+
+This is one way: instead of the ‘X’, you type '`\C-v`' and then '`\C-i`'.
+
+If you type this in a terminal at the bash prompt, the cursor will tab across
+the screen in the way you might have previously expected.
+
+
+If you look at the output of `stty -e` again (as you did in the previous readline section)
+then you will that `^V` is bound to the 'lnext' action. I believe (but can't confirm) that
+this stands for 'next character literal'.
+
+{line-numbers=off}
+    discard dsusp   eof     eol     eol2    erase   intr    kill    lnext
+    ^O      ^Y      ^D      <undef> <undef> ^?      ^C      ^U      ^V
+    min     quit    reprint start   status  stop    susp    time    werase
+    1       ^\      ^R      ^Q      ^T      ^S      ^Z      0       ^W
+
+
+There are multiple characters represented in this way. You’ve just seen tab
+(technically a 'vertical tab') represented as `^I`, and backspace represented as
+`^H`. You may recognise these and others in this table:
+
+
+| Name         | Hex          | C-escape     | CTRL-key     | Description  |              |
+|-----------------------------------------------------------------------------------------|
+| BEL          | 0x07         | \\a          | \^G          | Terminal     |              |
+|              |              |              |              | bell         |              |
+|-----------------------------------------------------------------------------------------|
+| BS           | 0x08         | \\b          | \^H          | Backspace    |              |
+|-----------------------------------------------------------------------------------------|
+| HT           | 0x09         | \\t          | \^I          | Horizontal   |              |
+|              |              |              |              | TAB          |              |
+|-----------------------------------------------------------------------------------------|
+| LF           | 0x0A         | \\n          | \^J          | Linefeed     |              |
+|-----------------------------------------------------------------------------------------|
+| VT           | 0x0B         | \\v          | \^K          | Vertical TAB |              |
+|-----------------------------------------------------------------------------------------|
+| FF           | 0x0C         | \\f          | \^L          | Formfeed     |              |
+|-----------------------------------------------------------------------------------------|
+| CR           | 0x0D         | \\r          | \^M          | Carriage     |              |
+|              |              |              |              | return       |              |
+|-----------------------------------------------------------------------------------------|
+| ESC          | 0x1B         | N/A          | \^\[         | Escape       |              |
+|              |              |              |              | character    |              |
+
+
+How would you input this, therefore, and what will it output?
+
+{line-numbers=on,starting-line-number=6}
+    $ echo abcc^Hdefg
+
+### Carriage Returns vs Line Feeds {#_carriage_returns_vs_line_feeds}
+
+The most commonly-seen non-printable character is the carriage return.
+
+Carriage returns and line feeds cause much confusion, but it doesn’t take long
+to understand the difference and (more importantly) why they are different.
+
+If you think about an old-fashioned typewrite or printer that moves along
+punching out characters to a page, at some point it has to be told: ‘go back to
+the beginning of the line’. Then, once at the beginning of the line, it has to
+be told: ‘feed the paper up one line so I can start writing my new line’.
+
+A ‘carriage return’ is, as the word ‘return’ suggests, ‘returns’ the cursor to
+the start of the line. It’s represented by the character ‘r’ for return. The
+‘line feed’, again as the name suggests, feeds the line up. In a modern
+terminal, this just means ‘move the cursor down’.
+
+So far, so clear and simple to learn. But, Linux does things differently! In
+Linux, `\n` is sufficient to do both. In Windows, you need both the `\r` and `\n`
+characters to represent a new line.
+
+This means that files can look strange in Linux terminals with these weird
+`^M` characters showing at the end of each line. To confuse things even more,
+some programs automatically handle the difference for you and hide it from you.
+
+So what will this output?
+
+{line-numbers=on,starting-line-number=7}
+    $ echo $'Bad magazine\rMad'
+
+This is why it’s important to have a way to see what the actual bytes in a file
+are. Here a very useful tool comes in: `hexdump`
+
+### Hexdump {#_hexdump}
+
+Run this:
+
+{line-numbers=on,starting-line-number=8}
+    $ echo $'Bad magazine\rMad' | hexdump
+    $ echo $'Bad magazine\rMad' | hexdump -c
+
+Hexdump prints out the characters received in standard input as hex digits.
+16 characters are printed per line, and on the left is displayed the count
+(also in hex) of the number of bytes processed up to that line.
+
+The `-c` flag prints out the contents as characters (including the control ones
+with appropriate backslashes in front, eg `\n`, whereas leaving it out just
+displays the hex values.
+
+It’s a great way to see what is *really* going on with text or any stream of
+output of bytes.
+
+If you go back to the first example in this section:
+
+{line-numbers=on,starting-line-number=10}
+    $ echo 'JUST THESE CHARACTERS' | hexdump -c
+    $ echo -n 'JUST THESE CHARACTERS' | hexdump -c
+
+You can figure out for yourself the difference between using the `-n` flag in `echo`
+and not using it.
+
+### Terminal Escape Codes {#_terminal_escape_codes}
+
+A terminal escape code is a defined sequence of bytes that, if sent to the terminal,
+will perform a specific action.
+
+Run this:
+
+{line-numbers=on,starting-line-number=12}
+    $ echo $'\033[?47h'
+    $ echo $'\033[?47l'
+
+The first line ‘saves’ the screen and the second restores it.
+
+The ANSI codes always start with the `ESC` character (`033` in octal) and left
+bracket character: in hex `1B`, then `5b`. So you could rewrite the above as:
+
+{line-numbers=on,starting-line-number=14}
+    $ echo $'\x1b\x5b?47h'
+    $ echo $'\x1b\x5b?47l'
+
+These ESC and left bracket characters are then followed by specific sequences
+which can change the color of the screen, the background text, the text itself,
+set the screen width, or even re-map keyboard keys.
+
+Type this out and see if you can figure out what it’s doing as you go:
+
+{line-numbers=on,starting-line-number=16}
+    $ ansi-test() {
+    for a in 0 1 4 5 7
+        do
+        echo "a=$a "
+        for (( f=0; f<=9; f++ ))
+        do
+            for (( b=0; b<=9; b++ ))
+            do
+                echo -ne "\\033[${a};3${f};4${b}m"
+                echo -ne "\\\\\\\\033[${a};3${f};4${b}m"
+                echo -ne "\\033[0m "
+            done
+            echo
+        done
+        echo
+    done
+    echo
+    }
+
+That shows you what all the ansi terminal escape codes are and you can see what
+they do in the terminal.
+
+Sometimes when you `cat` a binary file, (or `/dev/random`, which
+outputs random bytes) the contents when output to a terminal can cause the
+terminal to appear to 'go haywire'. This is because these escape
+codes are accidentally triggered by the sequences of bytes that happen to exist
+in these files.
+
+### Fun With Terminals {#_fun_with_terminals}
+
+Finally, some (optional) fun which pulls together a few different things you’ve
+learned along the way. It includes a couple of things (like `trap`) which we
+cover in the next section, so don't stress too much about understanding it.
+
+Create this listing as a file called ‘shiner’, and run it with:
+
+{line-numbers=on,starting-line-number=34}
+    sh shiner
+
+and remove it afterwards if you like.
+
+{line-numbers=on,starting-line-number=35}
+    #!/bin/bash
+
+    DATA[0]=" _/ _/ _/ _/ "
+    DATA[1]=" _/_/_/_/_/ _/_/_/ _/_/_/ _/_/_/ _/_/_/ "
+    DATA[2]=" _/ _/ _/ _/ _/ _/ _/_/ _/ _/"
+    DATA[3]="_/_/_/_/_/ _/ _/ _/ _/ _/_/ _/ _/ "
+    DATA[4]=" _/ _/ _/_/_/ _/_/_/ _/_/_/ _/ _/ "
+
+    REAL_OFFSET_X=0
+    REAL_OFFSET_Y=0
+
+    draw_char() {
+       V_COORD_X=$1
+       V_COORD_Y=$2
+
+       tput cup $((REAL_OFFSET_Y + V_COORD_Y)) $((REAL_OFFSET_X + V_COORD_X))
+
+       printf %c ${DATA[V_COORD_Y]:V_COORD_X:1}
+    }
+
+    trap 'exit 1' INT TERM
+    trap 'tput setaf 9; tput cvvis; clear' EXIT
+
+    tput civis
+    clear
+
+    while :; do
+        for ((c=1; c <= 7; c++)); do
+            tput setaf $c
+            for ((x=0; x<${#DATA[0]}; x++)); do
+            for ((y=0; y<=4; y++)); do
+            draw_char $x $y
+            done
+            done
+        done
+    done
+
+### What You Learned {#_what_you_learned}
+
+-   What terminal codes are
+
+-   What printable and non-printable characters are
+
+-   How to output any arbitrary bytes
+
+-   How to input a literal character using `CTRL-v`
+
+-   The difference between `\n` and `\r\n`
+
+-   What terminal escape codes are
+
+### What Next? {#_what_next}
+
+Building on this knowledge, next you will learn how to set up your prompt so
+that it can show you (and even do) useful things.
+
+### Cleanup {#_cleanup}
+
+You don’t necessarily need to clean up at the end of this section, but your
+terminal may have inadvertently changed state if input was wrongly made.
+
+If this happens, kill or exit your terminal and restart bash.
+
+### Exercises {#_exercises}
+
+1\) Research and echo all of echo’s escape sequences. Play with them and figure out what they do.
+
+2\) Research and echo 10 terminal escape sequences.
+
+3\) Look up all the `CTRL-v` escape sequences and experiment with them.
+
+4\) Research the command `tput`, figure out what it does and rewrite some of the above commands using it.
+
+5\) Re-map your keyboard so it outputs the wrong characters using escape codes.
+
+{pagebreak}
+

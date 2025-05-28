@@ -1,0 +1,41 @@
+## Advanced Variables {#_advanced_variables}
+
+- Parameter Expansion
+- Associative Arrays
+
+You've alread seen that you can specify where the variable name starts and ends using curly braces (`${}`).
+Bash allows you to do other things with the variable within these curly braces that affect the variable's interpretation by the shell.
+These are called 'parameter expansions'. Try this sequence, and figure out what is going on.
+
+You can set the variable inline if it's not already set by adding a `:=` after the variable name.
+
+ unset A
+ echo ${A:=123}
+ echo $A
+
+
+ unset A
+ echo ${A:-123}
+ echo $A
+
+When using the `:-` expansion, the 'A' variable is _not_ set this time. All that happened is that if `A` is unset, then `123` is substituted in its place.
+This is very handy if you want to set defaults, or ensure that a variable is set before continuing with your script.
+
+=== Associative Arrays
+Bash also supports ‘associative arrays’.
+Note - next commands require bash version 4.x!
+
+With associative arrays, you use a string instead of a number to reference the value:
+
+ declare -A MYAA=([one]=1 [two]=2 [three]=3)
+ MYAA[one]="1"
+ MYAA[two]="2"
+ echo $MYAA
+ echo ${MYAA[one]}
+ MYAA[one]="1"
+ WANT=two
+ echo ${MYAA[$WANT]}
+
+As well as not being compatible with versions less than 4.0, associative arrays are quite fiddly to create and use, so I don’t see them very often in the wild.
+
+Useful link: https://devhints.io/bash

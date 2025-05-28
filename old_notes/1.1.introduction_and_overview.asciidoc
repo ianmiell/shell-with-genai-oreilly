@@ -1,0 +1,99 @@
+= Pre-intro
+SLIDE 1
+Who am I, what have I done.  Twitter best place to contact, or mail ian.miell@gmail.com
+Courses I do, books I've written
+Please say hi in the chat (to establish contact). We'll be together for three weeks.
+
+SLIDE 2 - BASH AND ME Used throughout career
+
+SLIDE 3 - THIS COURSE
+Wide ranging, from beginner to some more advanced concepts. Does not cover everything.
+Emphasis on real-world practicalities.
+Lots of screensharing and exercises.
+Writing scripts
+Commonly-used utilities in the shell.
+bash version 4+ assumed
+What I want you to get out of it.
+Exercises/break will be put together. Questions in Q&A
+    Q&A approach
+    suggest to me things you want to learn via mail and I'll see if I can do it
+Github reference introduction-to-bash  ---- Zsh vs bash
+
+Challenges:
+git@resources.oreilly.com:katacoda/ian-miell.git
+https://learning.oreilly.com/scenarios/bash-fundamentals-challenge/9781098138431/
+
+SLIDE 4 - PRE-REQUISITES
+Version 4+ not a hard requirement, but if you have problems, likely due to that
+Github reference introduction-to-bash  ---- Zsh vs bash
+Terminal to run on, or can use katacoda https://katacoda.com/courses/centos/playground
+editors: you can use any editor you like. I use vim, but it's not easy to learn.
+
+SLIDE 5 - WHY THIS COURSE?
+Bash is undervalued: - Worked with it every day - Taken for granted that it's known. Learning it: - Pays massive dividends
+Writing scripts happens all the time in professional work, often a better choice than a more sophisticated programming language.
+
+SLIDE 6 - BASH IS UNDERSERVED
+BASH IS UNDER-SERVED - man page is hard to follow if you don't already understand it - one-liners that don't teach you what you need to understand - guides that assume knowledge you may not have
+It pays massive dividends to learn, and not just when using bash.
+
+These courses are aimed at:
+- going to assume almost no knowledge, you may have overlap with what you already know
+assumptions
+- no great knowledge of command line, maybe windows user or gui user in the past
+
+TARGET AUDIENCES
+Target audiences and what you'll get out of it:
+- hardly used bash    => will get a coverage of main areas of bash interest, and be able to write and read scripts
+- used bash somewhat  => refresher, and explain a few things seen before
+- used bash for years => 'aha moments' - I'd always wondered about that!
+CONFUSED BY?
+
+
+SLIDE 7 - RECENTLY USED BASH TO
+
+SLIDE 8 - TARGET AUDIENCES
+
+SLIDE 9 - STRUCTURE OF COURSE
+Week 1:
+Session duration:   4 hours
+Course schedule
+
+Part I - Introduction to the Shell (55 minutes)
+Presentation: Course Introduction and overview
+Poll: Level of experience
+Discussion: What do you want from the course?
+Presentation: Your first shell script
+Q&A
+Exercise: Create your first shell script
+
+Break (5 minutes)
+
+Part II - Basic Programming in the Shell (80 minutes)
+Discussion: Last Exercise
+Presentation: Shell Variables
+Presentation: Loops
+Discussion: Is the shell a programming language?
+Presentation: GNU Core commands - files and folders
+Break (5 minutes)
+Exercise: Create 100 files in a shell script
+Q&A
+
+Part III - Tests and Command Substitution (50 minutes)
+Discussion: Last Exercise
+Presentation: Tests and Exit codes
+Presentation:  Command substitution
+Exercise: Quit the script when you find the 50th file
+Q&A
+
+Break (5 minutes)
+
+Part IV - Shell Functions (45 minutes)
+Presentation: Functions
+Presentation: GNU Core commands - grep, find, and wc
+Exercise (homework): List the files in your home folder and below, and the number of lines each file has
+Q&A
+
+SLIDE 10 - DISCUSSION
+Via chat. Relate back to course.
+What do you want to get out of these three weeks?
