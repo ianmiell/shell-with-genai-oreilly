@@ -7,6 +7,8 @@ Hello, Arguments!
   ./hello.sh Bob
   Hello, Bob!
 
-- If the user does not provide exactly one argument, the script should print a usage* message, such as:
+- If the user does not provide exactly one argument, the script should print a usage message, such as:
 
   Usage: ./hello.sh <name>
+
+
