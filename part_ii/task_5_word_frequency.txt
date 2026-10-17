@@ -1,0 +1,6 @@
+Write a bash script that prints the top 10 most common words in a
+text file (create a sample file in the script).
+
+Build it as one pipeline, ignoring case and punctuation,
+then also show the pipeline built up one stage at a time, with the
+intermediate output of each stage.

@@ -1,0 +1,3 @@
+Write a bash script that reads lines either from a filename argument or, if none is
+given, from stdin, numbers the non-blank lines and highlights any line containing
+ERROR. Show it being used both ways: script.sh file and cat file | script.sh.

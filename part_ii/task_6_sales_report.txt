@@ -1,0 +1,4 @@
+Write a bash script that reads a CSV of sales (region,product,amount — generate
+sample data including a few malformed lines). Print total sales per region and the
+top 3 products, using one function per report section. Send warnings about
+malformed lines to stderr so that stdout can be piped cleanly into another command.
