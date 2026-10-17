@@ -1,4 +1,5 @@
 #!/bin/bash
+
 #
 # demo.sh - A small script demonstrating core shell scripting concepts:
 #   - Variables
@@ -8,10 +9,18 @@
 #
 # Usage: ./demo.sh <name> [age]
 
+# ---- Strict mode ----
+# -e: exit on any unchecked command failure
+# -u: treat unset variables as errors
+# -o pipefail: a pipeline fails if any stage fails, not just the last one
+set -euo pipefail
+
 # ---- Script arguments ----
 # $1, $2, etc. are positional arguments. $# is the argument count.
-name="$1"
-age="$2"
+# ${1:-} avoids an unbound-variable error under `set -u` when the
+# argument is missing.
+name="${1:-}"
+age="${2:-}"
 
 # ---- Variables ----
 min_age=18
@@ -32,21 +41,22 @@ echo "$greeting, $name!"
 # Only check age logic if an age argument was actually given.
 if [ -z "$age" ]; then
     echo "No age provided, skipping age check."
-elif [ "$age" -lt "$min_age" ] 2>/dev/null; then
+elif ! [[ "$age" =~ ^[0-9]+$ ]]; then
+    # Validate with a regex up front rather than relying on arithmetic
+    # comparisons to fail silently on non-numeric input.
+    echo "Error: age must be a non-negative whole number." >&2
+    exit 2
+elif [ "$age" -lt "$min_age" ]; then
     echo "You are under $min_age."
 else
-    if [ "$age" -ge "$min_age" ] 2>/dev/null; then
-        echo "You are $age, which is $min_age or older."
-    else
-        # Test failed because $age wasn't a number
-        echo "Error: age must be a number." >&2
-        exit 2
-    fi
+    echo "You are $age, which is $min_age or older."
 fi
 
 # ---- Exit codes in practice ----
-# Run a command and check its exit code explicitly with $?
-grep -q "root" /etc/passwd
+# Run a command and check its exit code explicitly with $?.
+# Under `set -e`, a plain failing command would abort the script before
+# we get to read $?, so we disarm it with `|| true` just for this call.
+grep -q "root" /etc/passwd || true
 status=$?
 
 if [ $status -eq 0 ]; then
