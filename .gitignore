@@ -1,1 +1,4 @@
 .claude
+
+# Agent-generated task solutions (task_N_name.txt -> task_N_name.sh)
+part_*/task_*.sh
